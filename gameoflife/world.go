@@ -25,7 +25,7 @@ func CreateMatrix(h, w int) WorldMatrix {
 
 func (this *WorldMatrix) RefToCell(coord Coord) *Cell {
 	x, y := coord.Get()
-	return &(*this)[y][x]
+	return &(*this)[x][y]
 }
 
 func NewWorld(h, w int) (World, error) {
@@ -54,14 +54,15 @@ func (this *World) SwitchMatrices() {
 }
 
 func (this *World) IsCoordValid(coord Coord) bool {
+	h, w := this.Size()
 	x, y := coord.Get()
-	return x >= 0 && x < len(this.Matrices[0]) && y >= 0 && y < len(this.Matrices[0][0])
+
+	return x >= 0 && x < w && y >= 0 && y < h
 }
 
 func (this *World) IsCellLive(coord Coord) (bool, error) {
 	if this.IsCoordValid(coord) {
-		x, y := coord.Get()
-		return (*this.GetActiveMatrix())[x][y].IsLive(), nil
+		return this.GetActiveMatrix().RefToCell(coord).IsLive(), nil
 	}
 
 	return false, errors.New("Invalid coord")
@@ -69,9 +70,7 @@ func (this *World) IsCellLive(coord Coord) (bool, error) {
 
 func (this *World) ActivateCell(coord Coord) error {
 	if this.IsCoordValid(coord) {
-		x, y := coord.Get()
-		(*this.GetActiveMatrix())[x][y] = NewLiveCell()
-
+		(*this.GetActiveMatrix().RefToCell(coord)) = NewLiveCell()
 		return nil
 	}
 
@@ -79,25 +78,25 @@ func (this *World) ActivateCell(coord Coord) error {
 }
 
 func (this *World) ForEachCoordinate(f func(coord Coord)) {
-	for iY, _ := range this.Matrices[0] {
-		for iX, _ := range this.Matrices[0][iY] {
-			f(NewCoord(iX, iY))
+	h, w := this.Size()
+
+	for x := 0; x < w; x++ {
+		for y := 0; y < h; y++ {
+			f(NewCoord(x, y))
 		}
 	}
 }
 
 func (this *World) GetCellState(coord Coord) CellState {
-	if this.IsCoordValid(coord) {
-		x, y := coord.Get()
-
-		if (*this.GetActiveMatrix())[y][x].IsLive() {
-			return ACTIVE_CELL
-		}
-
-		return INACTIVE_CELL
+	if !this.IsCoordValid(coord) {
+		return INVALID_NEIGHBOUR
 	}
 
-	return INVALID_NEIGHBOUR
+	if this.GetActiveMatrix().RefToCell(coord).IsLive() {
+		return ACTIVE_CELL
+	}
+
+	return INACTIVE_CELL
 }
 
 func (this *World) GetCellNeighbours(coord Coord) NeighboursStates {

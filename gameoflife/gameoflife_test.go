@@ -98,6 +98,16 @@ func TestGameOfLife(t *testing.T) {
 			So(w, ShouldEqual, 42)
 		})
 
+		Convey("10 columns and 2 rows world", func() {
+			world, _ := NewWorld(10, 2)
+
+			world.ForEachCoordinate(func(coord Coord) {
+				So(world.IsCoordValid(coord), ShouldBeTrue)
+				state := world.GetCellState(coord)
+				So(state, ShouldEqual, INACTIVE_CELL)
+			})
+		})
+
 		Convey("Invalid cell position", func() {
 			world, err := NewWorld(1, 1)
 			So(err, ShouldEqual, nil)
