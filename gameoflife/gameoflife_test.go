@@ -91,6 +91,13 @@ func TestGameOfLife(t *testing.T) {
 			So(err, ShouldResemble, errors.New("Impossible world"))
 		})
 
+		Convey("Size", func() {
+			world, _ := NewWorld(35, 42)
+			h, w := world.Size()
+			So(h, ShouldEqual, 35)
+			So(w, ShouldEqual, 42)
+		})
+
 		Convey("Invalid cell position", func() {
 			world, err := NewWorld(1, 1)
 			So(err, ShouldEqual, nil)
@@ -293,6 +300,22 @@ func TestGameOfLife(t *testing.T) {
 			Convey("2x2", func() {
 				live, _ := world.IsCellLive(NewCoord(2, 2))
 				So(live, ShouldBeFalse)
+			})
+		})
+	})
+
+	Convey("Test Output", t, func() {
+		Convey("Trivial world", func() {
+			world, _ := NewWorld(1, 1)
+			printer := NewPrinter(&world)
+
+			Convey("Empty", func() {
+				So(printer.Print(), ShouldEqual, "###\n# #\n###\n")
+			})
+
+			Convey("One live cell", func() {
+				world.ActivateCell(NewCoord(0, 0))
+				So(printer.Print(), ShouldEqual, "###\n#o#\n###\n")
 			})
 		})
 	})
