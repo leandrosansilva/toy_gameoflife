@@ -329,4 +329,16 @@ func TestGameOfLife(t *testing.T) {
 			})
 		})
 	})
+
+	Convey("Test Config File", t, func() {
+		Convey("Empty map", func() {
+			jsonContent := `{"Size": {"Height": 10, "Width": 20}, "Positions": []}`
+			config, err := ParseConfig(jsonContent)
+			So(err, ShouldEqual, nil)
+			So(config.Size.Height, ShouldEqual, 10)
+			So(config.Size.Width, ShouldEqual, 20)
+			So(len(config.Positions), ShouldEqual, 0)
+		})
+	})
+
 }
