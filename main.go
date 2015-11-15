@@ -51,7 +51,7 @@ func main() {
 
 	for {
 		fmt.Print(printer.Print())
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Millisecond * 500)
 		fmt.Print("\033[2J")
 		generator.Step()
 	}
