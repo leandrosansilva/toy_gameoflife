@@ -122,13 +122,11 @@ func TestGameOfLife(t *testing.T) {
 			Convey("Fail to activate cell", func() {
 				err := world.ActivateCell(NewCoord(1, 1))
 				So(err, ShouldResemble, errors.New("Invalid coord"))
-				world.SwitchMatrices()
 			})
 
 			Convey("Live cell in 0,0", func() {
 				err := world.ActivateCell(NewCoord(0, 0))
 				So(err, ShouldEqual, nil)
-				world.SwitchMatrices()
 				live, _ := world.IsCellLive(NewCoord(0, 0))
 				So(live, ShouldBeTrue)
 			})
@@ -139,7 +137,7 @@ func TestGameOfLife(t *testing.T) {
 		Convey("Always live regardless of neighbours", func() {
 			rule := NewRule(func(coord Coord) bool {
 				return true
-			}, func(neighbours NeighboursStates, live bool) bool {
+			}, func(neighbours NeighboursStates, coord Coord, live bool) bool {
 				return true
 			})
 
@@ -149,7 +147,7 @@ func TestGameOfLife(t *testing.T) {
 		Convey("Always die regardless of neighbours", func() {
 			rule := NewRule(func(coord Coord) bool {
 				return true
-			}, func(neighbours NeighboursStates, live bool) bool {
+			}, func(neighbours NeighboursStates, coord Coord, live bool) bool {
 				return false
 			})
 
@@ -160,7 +158,7 @@ func TestGameOfLife(t *testing.T) {
 			rule := NewRule(func(coord Coord) bool {
 				x, y := coord.Get()
 				return x == 0 && y == 0
-			}, func(neighbours NeighboursStates, live bool) bool {
+			}, func(neighbours NeighboursStates, coord Coord, live bool) bool {
 				return true
 			})
 

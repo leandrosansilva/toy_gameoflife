@@ -2,7 +2,6 @@ package gameoflife
 
 import (
 	"errors"
-	"log"
 )
 
 type CellState int
@@ -41,7 +40,7 @@ type Generator struct {
 
 type RuleFilter func(coord Coord) bool
 
-type RuleApplier func(neighbours NeighboursStates, live bool) bool
+type RuleApplier func(neighbours NeighboursStates, coord Coord, live bool) bool
 
 type Rule struct {
 	Filter  RuleFilter
@@ -138,12 +137,12 @@ func (this *World) GetMatrices() (live, inactive *WorldMatrix) {
 	return &this.Matrices[1], &this.Matrices[0]
 }
 
-func (this *World) GetLiveMatrix() *WorldMatrix {
+func (this *World) GetActiveMatrix() *WorldMatrix {
 	matrix, _ := this.GetMatrices()
 	return matrix
 }
 
-func (this *World) GetDeadMatrix() *WorldMatrix {
+func (this *World) GetInactiveMatrix() *WorldMatrix {
 	_, matrix := this.GetMatrices()
 	return matrix
 }
@@ -160,7 +159,7 @@ func (this *World) IsCoordValid(coord Coord) bool {
 func (this *World) IsCellLive(coord Coord) (bool, error) {
 	if this.IsCoordValid(coord) {
 		x, y := coord.Get()
-		return (*this.GetLiveMatrix())[x][y].IsLive(), nil
+		return (*this.GetActiveMatrix())[x][y].IsLive(), nil
 	}
 
 	return false, errors.New("Invalid coord")
@@ -169,7 +168,8 @@ func (this *World) IsCellLive(coord Coord) (bool, error) {
 func (this *World) ActivateCell(coord Coord) error {
 	if this.IsCoordValid(coord) {
 		x, y := coord.Get()
-		(*this.GetDeadMatrix())[x][y] = NewLiveCell()
+		(*this.GetActiveMatrix())[x][y] = NewLiveCell()
+
 		return nil
 	}
 
@@ -188,7 +188,7 @@ func (this *World) GetCellState(coord Coord) CellState {
 	if this.IsCoordValid(coord) {
 		x, y := coord.Get()
 
-		if (*this.GetLiveMatrix())[y][x].IsLive() {
+		if (*this.GetActiveMatrix())[y][x].IsLive() {
 			return ACTIVE_CELL
 		}
 
@@ -228,40 +228,39 @@ func NewGenerator(world *World) Generator {
 	}
 
 	rules = append(rules, NewRule(func(coord Coord) bool {
-		// Applies to live cells
-		live, _ := world.IsCellLive(coord)
-		return live
-	}, func(neighbours NeighboursStates, live bool) bool {
-		nLiveNeighbours := countNeighbours(neighbours, ACTIVE_CELL)
-		return nLiveNeighbours == 2 || nLiveNeighbours == 3
+		// Applies to dead cells
+		live := world.GetActiveMatrix().RefToCell(coord).IsLive()
+		return !live
+	}, func(neighbours NeighboursStates, coord Coord, live bool) bool {
+		return countNeighbours(neighbours, ACTIVE_CELL) == 3
 	}))
 
 	rules = append(rules, NewRule(func(coord Coord) bool {
-		// Applies to dead cells
-		live, _ := world.IsCellLive(coord)
-		return !live
-	}, func(neighbours NeighboursStates, live bool) bool {
-		return countNeighbours(neighbours, ACTIVE_CELL) == 3
+		// Applies to live cells
+		live := world.GetActiveMatrix().RefToCell(coord).IsLive()
+		return live
+	}, func(neighbours NeighboursStates, coord Coord, live bool) bool {
+		nLiveNeighbours := countNeighbours(neighbours, ACTIVE_CELL)
+		return nLiveNeighbours == 2 || nLiveNeighbours == 3
 	}))
 
 	return Generator{world, rules}
 }
 
 func (this *Generator) Step() {
-	_, inactiveMatrix := this.World.GetMatrices()
+	activeMatrix, inactiveMatrix := this.World.GetMatrices()
 
 	this.World.ForEachCoordinate(func(coord Coord) {
-		isLive, _ := this.World.IsCellLive(coord)
+		isLive := activeMatrix.RefToCell(coord).IsLive()
 
 		for _, rule := range this.Rules {
-			if rule.ApplyToCell(coord, isLive, this.World.GetCellNeighbours(coord)) {
-				log.Printf("Spawning %s\n", coord)
+			neighbours := this.World.GetCellNeighbours(coord)
+			if rule.ApplyToCell(coord, isLive, neighbours) {
 				*(inactiveMatrix.RefToCell(coord)) = NewLiveCell()
 				return
 			}
 		}
 
-		log.Printf("Killing %s\n", coord)
 		*(inactiveMatrix.RefToCell(coord)) = NewDeadCell()
 	})
 
@@ -273,5 +272,5 @@ func NewRule(filter RuleFilter, applier RuleApplier) Rule {
 }
 
 func (this *Rule) ApplyToCell(coord Coord, live bool, neighbours NeighboursStates) bool {
-	return this.Filter(coord) && this.Applier(neighbours, live)
+	return this.Filter(coord) && this.Applier(neighbours, coord, live)
 }
