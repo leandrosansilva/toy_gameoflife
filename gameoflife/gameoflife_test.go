@@ -339,6 +339,7 @@ func TestGameOfLife(t *testing.T) {
 			So(config.Size.Height, ShouldEqual, 10)
 			So(config.Size.Width, ShouldEqual, 20)
 			So(config.GenerationDuration, ShouldEqual, time.Millisecond*500)
+			So(config.RandomCells, ShouldEqual, 0)
 			So(len(config.Positions), ShouldEqual, 0)
 		})
 	})

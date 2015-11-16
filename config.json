@@ -6,6 +6,8 @@
 
   "GenerationDuration": "100ms",
 
+  "RandomCells" : 1000,
+
   "Positions": [
     [10,10],
     [10,11],

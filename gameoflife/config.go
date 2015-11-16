@@ -16,6 +16,8 @@ type Config struct {
 
 	GenerationDuration Duration
 
+	RandomCells int
+
 	// a coordinate is an array with two elements
 	Positions [][2]int
 }

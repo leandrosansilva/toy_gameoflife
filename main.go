@@ -5,6 +5,7 @@ import (
 	"fmt"
 	. "gameoflife/gameoflife"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"time"
 )
@@ -41,6 +42,15 @@ func main() {
 
 	for _, position := range config.Positions {
 		world.ActivateCell(NewCoord(position[0], position[1]))
+	}
+
+	rand.Seed(time.Now().UnixNano())
+
+	for i := 0; i < config.RandomCells; i++ {
+		x := rand.Int() % config.Size.Width
+		y := rand.Int() % config.Size.Height
+
+		world.ActivateCell(NewCoord(x, y))
 	}
 
 	generator := NewGenerator(&world)
