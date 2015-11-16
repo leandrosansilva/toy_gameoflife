@@ -6,7 +6,7 @@
 
   "GenerationDuration": "100ms",
 
-  "RandomCells" : 1000,
+  "RandomCells" : 10,
 
   "Circular": true,
 

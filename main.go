@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	. "gameoflife/gameoflife"
+	. "github.com/leandrosansilva/toy_gameoflife/gameoflife"
 	"io/ioutil"
 	"math/rand"
 	"os"
