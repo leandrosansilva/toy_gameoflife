@@ -1,4 +1,4 @@
-Game of life
+# Game of life
 
 It's just a toy I did on a boring Sunday after a Code Retreat Event 
 in Munich. It's just to practise my Go skills, as I found this 
