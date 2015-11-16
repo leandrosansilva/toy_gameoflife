@@ -149,6 +149,68 @@ func TestGameOfLife(t *testing.T) {
 				So(live, ShouldBeTrue)
 			})
 		})
+
+		Convey("Circular World", func() {
+			world, _ := NewCircularWorld(3, 3)
+			So(world.ActivateCell(NewCoord(0, 0)), ShouldEqual, nil)
+			So(world.ActivateCell(NewCoord(0, 2)), ShouldEqual, nil)
+			So(world.ActivateCell(NewCoord(2, 2)), ShouldEqual, nil)
+			So(world.ActivateCell(NewCoord(2, 0)), ShouldEqual, nil)
+
+			Convey("Cells on the edges have 3 neighbours", func() {
+				Convey("0x0", func() {
+					So(world.GetCellNeighbours(NewCoord(0, 0)), ShouldResemble, NeighboursStates{
+						ACTIVE_CELL,
+						ACTIVE_CELL,
+						INACTIVE_CELL,
+						INACTIVE_CELL,
+						INACTIVE_CELL,
+						INACTIVE_CELL,
+						INACTIVE_CELL,
+						ACTIVE_CELL,
+					})
+				})
+
+				Convey("0x2", func() {
+					So(world.GetCellNeighbours(NewCoord(0, 2)), ShouldResemble, NeighboursStates{
+						INACTIVE_CELL,
+						INACTIVE_CELL,
+						INACTIVE_CELL,
+						INACTIVE_CELL,
+						INACTIVE_CELL,
+						ACTIVE_CELL,
+						ACTIVE_CELL,
+						ACTIVE_CELL,
+					})
+				})
+
+				Convey("2x2", func() {
+					So(world.GetCellNeighbours(NewCoord(2, 2)), ShouldResemble, NeighboursStates{
+						INACTIVE_CELL,
+						INACTIVE_CELL,
+						INACTIVE_CELL,
+						ACTIVE_CELL,
+						ACTIVE_CELL,
+						ACTIVE_CELL,
+						INACTIVE_CELL,
+						INACTIVE_CELL,
+					})
+				})
+
+				Convey("2x0", func() {
+					So(world.GetCellNeighbours(NewCoord(2, 0)), ShouldResemble, NeighboursStates{
+						INACTIVE_CELL,
+						ACTIVE_CELL,
+						ACTIVE_CELL,
+						ACTIVE_CELL,
+						INACTIVE_CELL,
+						INACTIVE_CELL,
+						INACTIVE_CELL,
+						INACTIVE_CELL,
+					})
+				})
+			})
+		})
 	})
 
 	Convey("Test Rules", t, func() {

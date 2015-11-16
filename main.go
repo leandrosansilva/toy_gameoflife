@@ -38,7 +38,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	world, _ := NewWorld(config.Size.Height, config.Size.Width)
+	world, _ := func(circular bool) (World, error) {
+		if circular {
+			return NewCircularWorld(config.Size.Height, config.Size.Width)
+		}
+
+		return NewWorld(config.Size.Height, config.Size.Width)
+	}(config.Circular)
 
 	for _, position := range config.Positions {
 		world.ActivateCell(NewCoord(position[0], position[1]))

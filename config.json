@@ -1,12 +1,14 @@
 {
   "Size": {
-    "Width": 50,
-    "Height": 30
+    "Width": 130,
+    "Height": 48
   },
 
   "GenerationDuration": "100ms",
 
   "RandomCells" : 1000,
+
+  "Circular": true,
 
   "Positions": [
     [10,10],

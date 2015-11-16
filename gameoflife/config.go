@@ -18,6 +18,8 @@ type Config struct {
 
 	RandomCells int
 
+	Circular bool
+
 	// a coordinate is an array with two elements
 	Positions [][2]int
 }
@@ -26,10 +28,6 @@ func (this *Duration) UnmarshalText(text []byte) error {
 	var b bytes.Buffer
 
 	b.Write(text)
-
-	if len(b.String()) == 0 {
-		return nil
-	}
 
 	duration, err := time.ParseDuration(b.String())
 

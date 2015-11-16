@@ -30,16 +30,37 @@ func (this *WorldMatrix) RefToCell(coord Coord) *Cell {
 	return &(*this)[x][y]
 }
 
-func NewWorld(h, w int) (World, error) {
-	neighbourCoordTransformation := func(coord Coord) Coord {
-		return coord
-	}
-
+func NewGenericWorld(h, w int, transformation CoordTransformation) (World, error) {
 	if h > 0 && w > 0 {
-		return World{[2]WorldMatrix{CreateMatrix(h, w), CreateMatrix(h, w)}, true, neighbourCoordTransformation}, nil
+		return World{[2]WorldMatrix{CreateMatrix(h, w), CreateMatrix(h, w)}, true, transformation}, nil
 	}
 
 	return World{}, errors.New("Impossible world")
+}
+
+func NewWorld(h, w int) (World, error) {
+	return NewGenericWorld(h, w, func(coord Coord) Coord {
+		return coord
+	})
+}
+
+func NewCircularWorld(h, w int) (World, error) {
+	circulate := func(val, max int) int {
+		if val < 0 {
+			return max - 1
+		}
+
+		if val >= max {
+			return 0
+		}
+
+		return val
+	}
+
+	return NewGenericWorld(h, w, func(coord Coord) Coord {
+		x, y := coord.Get()
+		return NewCoord(circulate(x, w), circulate(y, h))
+	})
 }
 
 func (this *World) GetMatrices() (live, inactive *WorldMatrix) {
