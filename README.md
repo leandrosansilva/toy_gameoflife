@@ -7,7 +7,7 @@ language very interesting and productive.
 If you do not want to download the source code but have Docker installed, 
 first write a config.json file in the current directory with the content:
 
-<pre>
+```json
 {
   "Size": {
     "Width": 130,
@@ -40,10 +40,10 @@ first write a config.json file in the current directory with the content:
     [28,15]
   ]
 }
-<pre>
+```
 
 And then execute the command:
 
-<pre>
+```
 $ docker run --rm -it -v $PWD:/toy:ro golang bash -c 'go get github.com/leandrosansilva/toy_gameoflif&& toy_gameoflife --config /toy/config.json'
-</pre>
+```
