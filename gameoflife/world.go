@@ -76,7 +76,7 @@ func (this *World) GetActiveMatrix() *WorldMatrix {
 	return matrix
 }
 
-func (this *World) SwitchMatrices() {
+func (this *World) SwapMatrices() {
 	this.UsingFirstMatrix = !this.UsingFirstMatrix
 }
 

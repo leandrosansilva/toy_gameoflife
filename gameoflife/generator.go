@@ -5,9 +5,7 @@ type Generator struct {
 	Rules []Rule
 }
 
-func NewGenerator(world *World) Generator {
-	rules := make([]Rule, 0)
-
+func CreateDefaultRules(world *World) []Rule {
 	countNeighbours := func(neighbours NeighboursStates, expectedState CellState) int {
 		// NOTE: this is similar to reduce(sum)
 		count := 0
@@ -21,22 +19,30 @@ func NewGenerator(world *World) Generator {
 		return count
 	}
 
-	rules = append(rules, NewRule(func(coord Coord) bool {
-		// Applies to dead cells
-		return !world.GetActiveMatrix().RefToCell(coord).IsLive()
-	}, func(neighbours NeighboursStates, coord Coord, live bool) bool {
-		return countNeighbours(neighbours, ACTIVE_CELL) == 3
-	}))
+	return []Rule{
+		NewRule(func(coord Coord) bool {
+			// Applies to dead cells
+			return !world.GetActiveMatrix().RefToCell(coord).IsLive()
+		}, func(neighbours NeighboursStates, coord Coord, live bool) bool {
+			return countNeighbours(neighbours, ACTIVE_CELL) == 3
+		}),
 
-	rules = append(rules, NewRule(func(coord Coord) bool {
-		// Applies to live cells
-		return world.GetActiveMatrix().RefToCell(coord).IsLive()
-	}, func(neighbours NeighboursStates, coord Coord, live bool) bool {
-		nLiveNeighbours := countNeighbours(neighbours, ACTIVE_CELL)
-		return nLiveNeighbours == 2 || nLiveNeighbours == 3
-	}))
+		NewRule(func(coord Coord) bool {
+			// Applies to live cells
+			return world.GetActiveMatrix().RefToCell(coord).IsLive()
+		}, func(neighbours NeighboursStates, coord Coord, live bool) bool {
+			nLiveNeighbours := countNeighbours(neighbours, ACTIVE_CELL)
+			return nLiveNeighbours == 2 || nLiveNeighbours == 3
+		}),
+	}
+}
 
+func NewGenericGenerator(world *World, rules []Rule) Generator {
 	return Generator{world, rules}
+}
+
+func NewGenerator(world *World) Generator {
+	return NewGenericGenerator(world, CreateDefaultRules(world))
 }
 
 func (this *Generator) Step() {
@@ -59,5 +65,5 @@ func (this *Generator) Step() {
 		*(inactiveMatrix.RefToCell(coord)) = NewDeadCell()
 	})
 
-	this.World.SwitchMatrices()
+	this.World.SwapMatrices()
 }
