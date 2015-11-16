@@ -6,8 +6,9 @@ type WorldMatrix [][]Cell
 
 type World struct {
 	// The current Matrix and the next generation one
-	Matrices         [2]WorldMatrix
-	UsingFirstMatrix bool
+	Matrices                     [2]WorldMatrix
+	UsingFirstMatrix             bool
+	NeighbourCoordTransformation CoordTransformation
 }
 
 func CreateMatrix(h, w int) WorldMatrix {
@@ -15,6 +16,7 @@ func CreateMatrix(h, w int) WorldMatrix {
 
 	for iw, _ := range matrix {
 		matrix[iw] = make([]Cell, h)
+
 		for ih, _ := range matrix[iw] {
 			matrix[iw][ih] = NewDeadCell()
 		}
@@ -29,8 +31,12 @@ func (this *WorldMatrix) RefToCell(coord Coord) *Cell {
 }
 
 func NewWorld(h, w int) (World, error) {
+	neighbourCoordTransformation := func(coord Coord) Coord {
+		return coord
+	}
+
 	if h > 0 && w > 0 {
-		return World{[2]WorldMatrix{CreateMatrix(h, w), CreateMatrix(h, w)}, true}, nil
+		return World{[2]WorldMatrix{CreateMatrix(h, w), CreateMatrix(h, w)}, true, neighbourCoordTransformation}, nil
 	}
 
 	return World{}, errors.New("Impossible world")
@@ -101,14 +107,14 @@ func (this *World) GetCellState(coord Coord) CellState {
 
 func (this *World) GetCellNeighbours(coord Coord) NeighboursStates {
 	return NeighboursStates{
-		this.GetCellState(coord.NorthWest()),
-		this.GetCellState(coord.North()),
-		this.GetCellState(coord.NorthEast()),
-		this.GetCellState(coord.East()),
-		this.GetCellState(coord.SouthEast()),
-		this.GetCellState(coord.South()),
-		this.GetCellState(coord.SouthWest()),
-		this.GetCellState(coord.West()),
+		this.GetCellState(this.NeighbourCoordTransformation(coord.NorthWest())),
+		this.GetCellState(this.NeighbourCoordTransformation(coord.North())),
+		this.GetCellState(this.NeighbourCoordTransformation(coord.NorthEast())),
+		this.GetCellState(this.NeighbourCoordTransformation(coord.East())),
+		this.GetCellState(this.NeighbourCoordTransformation(coord.SouthEast())),
+		this.GetCellState(this.NeighbourCoordTransformation(coord.South())),
+		this.GetCellState(this.NeighbourCoordTransformation(coord.SouthWest())),
+		this.GetCellState(this.NeighbourCoordTransformation(coord.West())),
 	}
 }
 

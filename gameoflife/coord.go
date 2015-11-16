@@ -4,6 +4,8 @@ type Coord struct {
 	X, Y int
 }
 
+type CoordTransformation func(Coord) Coord
+
 func NewCoord(x, y int) Coord {
 	return Coord{x, y}
 }
