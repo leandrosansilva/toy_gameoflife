@@ -45,5 +45,5 @@ first write a config.json file in the current directory with the content:
 And then execute the command:
 
 ```
-$ docker run --rm -it -v $PWD:/toy:ro golang bash -c 'go get github.com/leandrosansilva/toy_gameoflif&& toy_gameoflife --config /toy/config.json'
+$ docker run --rm -it -v $PWD:/toy:ro golang bash -c 'go get github.com/leandrosansilva/toy_gameoflife && toy_gameoflife --config /toy/config.json'
 ```
