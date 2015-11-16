@@ -1,8 +1,12 @@
 package gameoflife
 
 import (
+	"bytes"
 	"encoding/json"
+	"time"
 )
+
+type Duration time.Duration
 
 type Config struct {
 	Size struct {
@@ -10,8 +14,28 @@ type Config struct {
 		Width  int
 	}
 
+	GenerationDuration Duration
+
 	// a coordinate is an array with two elements
 	Positions [][2]int
+}
+
+func (this *Duration) UnmarshalText(text []byte) error {
+	var b bytes.Buffer
+
+	b.Write(text)
+
+	if len(b.String()) == 0 {
+		return nil
+	}
+
+	duration, err := time.ParseDuration(b.String())
+
+	if err == nil {
+		*this = Duration(duration)
+	}
+
+	return err
 }
 
 func ParseConfig(configContent string) (Config, error) {

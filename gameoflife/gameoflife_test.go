@@ -4,6 +4,7 @@ import (
 	"errors"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
+	"time"
 )
 
 func TestGameOfLife(t *testing.T) {
@@ -332,13 +333,13 @@ func TestGameOfLife(t *testing.T) {
 
 	Convey("Test Config File", t, func() {
 		Convey("Empty map", func() {
-			jsonContent := `{"Size": {"Height": 10, "Width": 20}, "Positions": []}`
+			jsonContent := `{"Size": {"Height": 10, "Width": 20}, "GenerationDuration": "500ms", "Positions": []}`
 			config, err := ParseConfig(jsonContent)
 			So(err, ShouldEqual, nil)
 			So(config.Size.Height, ShouldEqual, 10)
 			So(config.Size.Width, ShouldEqual, 20)
+			So(config.GenerationDuration, ShouldEqual, time.Millisecond*500)
 			So(len(config.Positions), ShouldEqual, 0)
 		})
 	})
-
 }
