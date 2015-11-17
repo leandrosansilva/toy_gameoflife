@@ -72,7 +72,6 @@ func main() {
 		if err := placer.Place(specie, life.Position); err != nil {
 			fmt.Fprintf(os.Stderr, "Could not insert %s in position %s: \"%s\"\n", life.Specie, life.Position, err)
 			os.Exit(1)
-
 		}
 	}
 
