@@ -217,32 +217,32 @@ func TestGameOfLife(t *testing.T) {
 		Convey("Always live regardless of neighbours", func() {
 			rule := NewRule(func(coord Coord) bool {
 				return true
-			}, func(neighbours NeighboursStates, coord Coord, live bool) bool {
+			}, func(neighbours NeighboursStates, coord Coord) bool {
 				return true
 			})
 
-			So(rule.ApplyToCell(NewCoord(0, 0), true, NeighboursStates{}), ShouldBeTrue)
+			So(rule.ApplyToCell(NewCoord(0, 0), NeighboursStates{}), ShouldBeTrue)
 		})
 
 		Convey("Always die regardless of neighbours", func() {
 			rule := NewRule(func(coord Coord) bool {
 				return true
-			}, func(neighbours NeighboursStates, coord Coord, live bool) bool {
+			}, func(neighbours NeighboursStates, coord Coord) bool {
 				return false
 			})
 
-			So(rule.ApplyToCell(NewCoord(0, 0), true, NeighboursStates{}), ShouldBeFalse)
+			So(rule.ApplyToCell(NewCoord(0, 0), NeighboursStates{}), ShouldBeFalse)
 		})
 
 		Convey("Die because rule does not apply", func() {
 			rule := NewRule(func(coord Coord) bool {
 				x, y := coord.Get()
 				return x == 0 && y == 0
-			}, func(neighbours NeighboursStates, coord Coord, live bool) bool {
+			}, func(neighbours NeighboursStates, coord Coord) bool {
 				return true
 			})
 
-			So(rule.ApplyToCell(NewCoord(1, 1), true, NeighboursStates{}), ShouldBeFalse)
+			So(rule.ApplyToCell(NewCoord(1, 1), NeighboursStates{}), ShouldBeFalse)
 		})
 	})
 

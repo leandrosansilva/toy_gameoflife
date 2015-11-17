@@ -23,14 +23,14 @@ func CreateDefaultRules(world *World) []Rule {
 		NewRule(func(coord Coord) bool {
 			// Applies to dead cells
 			return !world.GetActiveMatrix().RefToCell(coord).IsLive()
-		}, func(neighbours NeighboursStates, coord Coord, live bool) bool {
+		}, func(neighbours NeighboursStates, coord Coord) bool {
 			return countNeighbours(neighbours, ACTIVE_CELL) == 3
 		}),
 
 		NewRule(func(coord Coord) bool {
 			// Applies to live cells
 			return world.GetActiveMatrix().RefToCell(coord).IsLive()
-		}, func(neighbours NeighboursStates, coord Coord, live bool) bool {
+		}, func(neighbours NeighboursStates, coord Coord) bool {
 			nLiveNeighbours := countNeighbours(neighbours, ACTIVE_CELL)
 			return nLiveNeighbours == 2 || nLiveNeighbours == 3
 		}),
@@ -46,23 +46,22 @@ func NewGenerator(world *World) Generator {
 }
 
 func (this *Generator) Step() {
-	activeMatrix, inactiveMatrix := this.World.GetMatrices()
+	_, inactiveMatrix := this.World.GetMatrices()
 
 	this.World.ForEachCoordinate(func(coord Coord) {
-		isLive := activeMatrix.RefToCell(coord).IsLive()
+		*(inactiveMatrix.RefToCell(coord)) = func() Cell {
+			for _, rule := range this.Rules {
+				neighbours := this.World.GetCellNeighbours(coord)
 
-		for _, rule := range this.Rules {
-			neighbours := this.World.GetCellNeighbours(coord)
-
-			// NOTE: stops on the first rule which
-			// applies to the cell
-			if rule.ApplyToCell(coord, isLive, neighbours) {
-				*(inactiveMatrix.RefToCell(coord)) = NewLiveCell()
-				return
+				// NOTE: stops on the first rule which
+				// applies to the cell
+				if rule.ApplyToCell(coord, neighbours) {
+					return NewLiveCell()
+				}
 			}
-		}
 
-		*(inactiveMatrix.RefToCell(coord)) = NewDeadCell()
+			return NewDeadCell()
+		}()
 	})
 
 	this.World.SwapMatrices()
