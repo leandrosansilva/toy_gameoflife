@@ -59,6 +59,23 @@ func main() {
 		world.ActivateCell(NewCoord(x, y))
 	}
 
+	placer := NewLifePlacer(&world)
+
+	for _, life := range config.Population {
+		specie, found := config.Species[life.Specie]
+
+		if !found {
+			fmt.Fprintf(os.Stderr, "Invalid specie %s\n", life.Specie)
+			os.Exit(1)
+		}
+
+		if err := placer.Place(specie, life.Position); err != nil {
+			fmt.Fprintf(os.Stderr, "Could not insert %s in position %s: \"%s\"\n", life.Specie, life.Position, err)
+			os.Exit(1)
+
+		}
+	}
+
 	generator := NewGenerator(&world)
 
 	printer := NewPrinter(&world)

@@ -22,6 +22,13 @@ type Config struct {
 
 	// a coordinate is an array with two elements
 	Positions [][2]int
+
+	Species map[string]Specie
+
+	Population []struct {
+		Specie   string
+		Position Coord
+	}
 }
 
 func (this *Duration) UnmarshalText(text []byte) error {

@@ -1,0 +1,30 @@
+{
+  "Size": {
+    "Width": 100,
+    "Height": 35
+  },
+
+  "GenerationDuration": "50ms",
+
+  "Circular": true,
+
+  "Species": {
+    "glider": [
+      [0,1,0],
+      [0,0,1],
+      [1,1,1]
+    ]
+  },
+
+  "Population": [
+    {
+      "Specie": "glider",
+      "Position": [0,0]
+    },
+
+    {
+      "Specie": "glider",
+      "Position": [20,10]
+    }
+  ]
+}

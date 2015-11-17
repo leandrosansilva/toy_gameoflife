@@ -1,6 +1,7 @@
 package gameoflife
 
 import (
+	"encoding/json"
 	"errors"
 	. "github.com/smartystreets/goconvey/convey"
 	"testing"
@@ -403,6 +404,109 @@ func TestGameOfLife(t *testing.T) {
 			So(config.GenerationDuration, ShouldEqual, time.Millisecond*500)
 			So(config.RandomCells, ShouldEqual, 0)
 			So(len(config.Positions), ShouldEqual, 0)
+		})
+	})
+
+	Convey("Species", t, func() {
+		Convey("Simplest", func() {
+			simple, err := NewSpecie([][]int{{1}})
+			So(err, ShouldEqual, nil)
+			h, w := simple.Size()
+			So(h, ShouldEqual, 1)
+			So(w, ShouldEqual, 1)
+			So(simple[0][0], ShouldEqual, 1)
+		})
+
+		Convey("Glider", func() {
+			glider, err := NewSpecie([][]int{
+				{0, 1, 0},
+				{0, 0, 1},
+				{1, 1, 1},
+			})
+
+			So(err, ShouldEqual, nil)
+			h, w := glider.Size()
+			So(h, ShouldEqual, 3)
+			So(w, ShouldEqual, 3)
+		})
+
+		Convey("Letter L", func() {
+			l, err := NewSpecie([][]int{
+				{1, 0},
+				{1, 0},
+				{1, 1},
+			})
+
+			So(err, ShouldEqual, nil)
+			h, w := l.Size()
+			So(h, ShouldEqual, 3)
+			So(w, ShouldEqual, 2)
+		})
+	})
+
+	Convey("Create life", t, func() {
+		Convey("Put Letter L on 4x4 world", func() {
+			l, err := NewSpecie([][]int{
+				{1, 0},
+				{1, 0},
+				{1, 1},
+			})
+
+			world, _ := NewWorld(4, 4)
+
+			placer := NewLifePlacer(&world)
+
+			Convey("Insert in invalid position", func() {
+				err := placer.Place(l, NewCoord(3, 2))
+				So(err, ShouldResemble, errors.New("Invalid position to form of life"))
+			})
+
+			err = placer.Place(l, NewCoord(2, 1))
+
+			So(err, ShouldEqual, nil)
+
+			Convey("Active cells", func() {
+				for _, value := range [][2]int{
+					{2, 1}, {2, 2}, {2, 3}, {3, 3},
+				} {
+					active, err := world.IsCellLive(NewCoord(value[0], value[1]))
+					So(err, ShouldEqual, nil)
+					So(active, ShouldBeTrue)
+				}
+			})
+
+			Convey("Inactive cells", func() {
+				for _, value := range [][2]int{
+					{0, 0}, {1, 0}, {2, 0}, {3, 0},
+					{0, 1}, {1, 1}, {3, 1},
+					{0, 2}, {1, 2}, {3, 2},
+					{0, 3}, {1, 3},
+				} {
+					active, err := world.IsCellLive(NewCoord(value[0], value[1]))
+					So(err, ShouldEqual, nil)
+					So(active, ShouldBeFalse)
+				}
+			})
+		})
+	})
+
+	Convey("Parse config Specie", t, func() {
+		Convey("Parse Glider", func() {
+			configContent := "[[0,1,0],[0,0,1],[1,1,1]]"
+
+			var specie Specie
+
+			err := json.Unmarshal([]byte(configContent), &specie)
+
+			So(err, ShouldEqual, nil)
+
+			glider, _ := NewSpecie([][]int{
+				{0, 1, 0},
+				{0, 0, 1},
+				{1, 1, 1},
+			})
+
+			So(glider, ShouldResemble, specie)
 		})
 	})
 }

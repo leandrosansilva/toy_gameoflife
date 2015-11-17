@@ -1,8 +1,6 @@
 package gameoflife
 
-type Coord struct {
-	X, Y int
-}
+type Coord [2]int
 
 type CoordTransformation func(Coord) Coord
 
@@ -47,5 +45,5 @@ func (this Coord) SouthEast() Coord {
 }
 
 func (this *Coord) Get() (x, y int) {
-	return this.X, this.Y
+	return (*this)[0], (*this)[1]
 }
