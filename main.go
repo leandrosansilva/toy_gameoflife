@@ -47,7 +47,7 @@ func main() {
 	}()
 
 	for _, position := range config.Positions {
-		world.ActivateCell(NewCoord(position[0], position[1]))
+		world.ActivateCell(position)
 	}
 
 	rand.Seed(time.Now().UnixNano())

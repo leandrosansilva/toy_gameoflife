@@ -466,7 +466,7 @@ func TestGameOfLife(t *testing.T) {
 			So(err, ShouldEqual, nil)
 
 			Convey("Active cells", func() {
-				for _, value := range [][2]int{
+				for _, value := range []Coord{
 					{2, 1}, {2, 2}, {2, 3}, {3, 3},
 				} {
 					active, err := world.IsCellLive(NewCoord(value[0], value[1]))
@@ -476,7 +476,7 @@ func TestGameOfLife(t *testing.T) {
 			})
 
 			Convey("Inactive cells", func() {
-				for _, value := range [][2]int{
+				for _, value := range []Coord{
 					{0, 0}, {1, 0}, {2, 0}, {3, 0},
 					{0, 1}, {1, 1}, {3, 1},
 					{0, 2}, {1, 2}, {3, 2},
