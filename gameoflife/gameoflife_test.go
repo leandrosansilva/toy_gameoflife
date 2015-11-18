@@ -509,4 +509,31 @@ func TestGameOfLife(t *testing.T) {
 			So(glider, ShouldResemble, specie)
 		})
 	})
+
+	Convey("Test Import .lif files", t, func() {
+		Convey("glider", func() {
+			content := `#Life 1.05
+#D This is a glider.
+#N
+#P -1 -1
+.*.
+..*
+***`
+			importer := NewSpecieImporter()
+
+			specie, err := importer.ImportFromString(content)
+
+			So(err, ShouldEqual, nil)
+
+			glider, _ := NewSpecie([][]int{
+				{0, 1, 0},
+				{0, 0, 1},
+				{1, 1, 1},
+			})
+
+			So(specie, ShouldResemble, glider)
+
+		})
+	})
+
 }
