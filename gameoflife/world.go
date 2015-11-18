@@ -2,7 +2,10 @@ package gameoflife
 
 import "errors"
 
-type WorldMatrix [][]Cell
+type WorldMatrix struct {
+	Array []Cell
+	Width int
+}
 
 type World struct {
 	// The current Matrix and the next generation one
@@ -12,22 +15,12 @@ type World struct {
 }
 
 func CreateMatrix(h, w int) WorldMatrix {
-	matrix := make(WorldMatrix, w)
-
-	for iw, _ := range matrix {
-		matrix[iw] = make([]Cell, h)
-
-		for ih, _ := range matrix[iw] {
-			matrix[iw][ih] = NewDeadCell()
-		}
-	}
-
-	return matrix
+	return WorldMatrix{make([]Cell, w*h), w}
 }
 
 func (this *WorldMatrix) RefToCell(coord Coord) *Cell {
 	x, y := coord.Get()
-	return &(*this)[x][y]
+	return &(this.Array[y*this.Width+x])
 }
 
 func NewGenericWorld(h, w int, transformation CoordTransformation) (World, error) {
@@ -140,5 +133,5 @@ func (this *World) GetCellNeighbours(coord Coord) NeighboursStates {
 }
 
 func (this *World) Size() (h, w int) {
-	return len(this.Matrices[0][0]), len(this.Matrices[0])
+	return len(this.Matrices[0].Array) / this.Matrices[0].Width, this.Matrices[0].Width
 }
