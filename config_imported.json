@@ -1,0 +1,22 @@
+{
+  "Size": {
+    "Width": 150,
+    "Height": 48
+  },
+
+  "GenerationDuration": "100ms",
+
+  "Circular": true,
+
+  "Population": [
+    {
+      "Specie": "rake",
+      "Position": [5,5]
+    },
+
+    {
+      "Specie": "hartmut",
+      "Position": [100,20]
+    }
+  ]
+}

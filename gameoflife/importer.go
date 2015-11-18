@@ -21,6 +21,10 @@ func (this *Importer) ImportFromString(content string) (Specie, error) {
 			return 1, nil
 		}
 
+		if c == 'O' {
+			return 1, nil
+		}
+
 		if c == '.' {
 			return 0, nil
 		}
@@ -85,7 +89,6 @@ func (this *Importer) ImportFromString(content string) (Specie, error) {
 	specieRows := make([][]int, 0)
 
 	for lineNumber, line := range validContent {
-
 		row, err := buildRow(lineNumber, width, line)
 
 		if err != nil {

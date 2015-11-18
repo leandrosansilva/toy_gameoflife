@@ -510,7 +510,7 @@ func TestGameOfLife(t *testing.T) {
 		})
 	})
 
-	Convey("Test Import .lif files", t, func() {
+	Convey("Test Import .lif (1.05) files", t, func() {
 		Convey("glider", func() {
 			content := `#Life 1.05
 #D This is a glider.
