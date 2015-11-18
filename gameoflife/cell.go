@@ -1,6 +1,6 @@
 package gameoflife
 
-type CellState int
+type CellState uint8
 
 const (
 	// Not used by the cell, but informs there
@@ -13,18 +13,16 @@ const (
 
 type NeighboursStates [8]CellState
 
-type Cell struct {
-	State CellState
-}
+type Cell bool
 
 func NewLiveCell() Cell {
-	return Cell{ACTIVE_CELL}
+	return Cell(true)
 }
 
 func NewDeadCell() Cell {
-	return Cell{INACTIVE_CELL}
+	return Cell(false)
 }
 
 func (this *Cell) IsLive() bool {
-	return this.State == ACTIVE_CELL
+	return bool(*this)
 }

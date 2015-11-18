@@ -46,6 +46,14 @@ func NewGenerator(world *World) Generator {
 }
 
 func (this *Generator) Step() {
+	newCellFromBool := func(live bool) Cell {
+		if live {
+			return NewLiveCell()
+		}
+
+		return NewDeadCell()
+	}
+
 	_, inactiveMatrix := this.World.GetMatrices()
 
 	this.World.ForEachCoordinate(func(coord Coord) {
@@ -55,8 +63,8 @@ func (this *Generator) Step() {
 
 				// NOTE: stops on the first rule which
 				// applies to the cell
-				if rule.ApplyToCell(coord, neighbours) {
-					return NewLiveCell()
+				if rule.Filter(coord) {
+					return newCellFromBool(rule.ApplyToCell(coord, neighbours))
 				}
 			}
 

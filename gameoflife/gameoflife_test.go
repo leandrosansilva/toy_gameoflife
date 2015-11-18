@@ -222,7 +222,7 @@ func TestGameOfLife(t *testing.T) {
 				return true
 			})
 
-			So(rule.ApplyToCell(NewCoord(0, 0), NeighboursStates{}), ShouldBeTrue)
+			So(rule.Filter(NewCoord(0, 0)) && rule.ApplyToCell(NewCoord(0, 0), NeighboursStates{}), ShouldBeTrue)
 		})
 
 		Convey("Always die regardless of neighbours", func() {
@@ -232,7 +232,7 @@ func TestGameOfLife(t *testing.T) {
 				return false
 			})
 
-			So(rule.ApplyToCell(NewCoord(0, 0), NeighboursStates{}), ShouldBeFalse)
+			So(rule.Filter(NewCoord(0, 0)) && rule.ApplyToCell(NewCoord(0, 0), NeighboursStates{}), ShouldBeFalse)
 		})
 
 		Convey("Die because rule does not apply", func() {
@@ -243,7 +243,7 @@ func TestGameOfLife(t *testing.T) {
 				return true
 			})
 
-			So(rule.ApplyToCell(NewCoord(1, 1), NeighboursStates{}), ShouldBeFalse)
+			So(rule.Filter(NewCoord(1, 1)) && rule.ApplyToCell(NewCoord(1, 1), NeighboursStates{}), ShouldBeFalse)
 		})
 	})
 

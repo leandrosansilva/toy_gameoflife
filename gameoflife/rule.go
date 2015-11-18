@@ -14,5 +14,5 @@ func NewRule(filter RuleFilter, applier RuleApplier) Rule {
 }
 
 func (this *Rule) ApplyToCell(coord Coord, neighbours NeighboursStates) bool {
-	return this.Filter(coord) && this.Applier(neighbours, coord)
+	return this.Applier(neighbours, coord)
 }
