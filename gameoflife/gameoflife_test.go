@@ -516,7 +516,7 @@ func TestGameOfLife(t *testing.T) {
 #D This is a glider.
 #N
 #P -1 -1
-.*.
+.*
 ..*
 ***`
 			importer := NewSpecieImporter()

@@ -13,6 +13,8 @@ func NewSpecieImporter() Importer {
 	return Importer{}
 }
 
+// FIXME: this method is enoooormous and MUST be refactored
+// It also should somehow support Life 1.06
 func (this *Importer) ImportFromString(content string) (Specie, error) {
 	charToLiveSpecieCell := func(c rune, line int) (int, error) {
 		if c == '*' {
@@ -26,10 +28,10 @@ func (this *Importer) ImportFromString(content string) (Specie, error) {
 		return 0, errors.New(fmt.Sprintf("Invalid char \"%c\" on line %d", c, line))
 	}
 
-	buildRow := func(lineNumber int, line string) ([]int, error) {
+	buildRow := func(lineNumber, length int, line string) ([]int, error) {
 		var err error
 
-		row := make([]int, len(line))
+		row := make([]int, length)
 
 		for index, c := range line {
 			row[index], err = charToLiveSpecieCell(c, lineNumber)
@@ -42,17 +44,49 @@ func (this *Importer) ImportFromString(content string) (Specie, error) {
 		return row, nil
 	}
 
-	specieRows := make([][]int, 0)
+	filterValidContent := func(content string) []string {
+		result := make([]string, 0)
+		splitted := strings.Split(content, "\n")
 
-	for lineNumber, line := range strings.Split(content, "\n") {
-		trimmed := strings.Trim(line, " ")
+		for _, line := range splitted {
+			trimmed := strings.Trim(line, " ")
 
-		// Ignore comments and empty lines
-		if len(trimmed) == 0 || trimmed[0] == '#' {
-			continue
+			// Ignore comments and empty lines
+			if len(trimmed) == 0 || trimmed[0] == '#' {
+				continue
+			}
+
+			result = append(result, trimmed)
 		}
 
-		row, err := buildRow(lineNumber, trimmed)
+		return result
+	}
+
+	max := func(a, b int) int {
+		if a > b {
+			return a
+		}
+
+		return b
+	}
+
+	validContent := filterValidContent(content)
+
+	width := func() int {
+		m := 0
+
+		for _, line := range validContent {
+			m = max(m, len(line))
+		}
+
+		return m
+	}()
+
+	specieRows := make([][]int, 0)
+
+	for lineNumber, line := range validContent {
+
+		row, err := buildRow(lineNumber, width, line)
 
 		if err != nil {
 			return Specie{}, err

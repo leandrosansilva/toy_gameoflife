@@ -1,21 +1,51 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	. "github.com/leandrosansilva/toy_gameoflife/gameoflife"
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"strings"
 	"time"
 )
+
+type ImportedSpecies map[string]string
+
+func (this *ImportedSpecies) Set(value string) error {
+	if *this == nil {
+		*this = make(ImportedSpecies)
+	}
+
+	s := strings.Split(value, "=")
+
+	if len(s) != 2 {
+		return errors.New(fmt.Sprintf("Could not parse option \"%s\"", value))
+	}
+
+	if _, found := (*this)[s[0]]; found {
+		return errors.New(fmt.Sprintf("Cannot define imported life \"%s\" more than once", value))
+	}
+
+	(*this)[s[0]] = s[1]
+
+	return nil
+}
+
+func (this *ImportedSpecies) String() string {
+	return "[]"
+}
 
 func main() {
 	var configFilename string
 	var showHelp bool
+	var importedSpecies ImportedSpecies
 
 	flag.BoolVar(&showHelp, "help", false, "Show help message")
 	flag.StringVar(&configFilename, "config", "config.json", "Configuration file path")
+	flag.Var(&importedSpecies, "i", "List of lifename=filename for imported life")
 
 	flag.Parse()
 
@@ -57,6 +87,28 @@ func main() {
 		y := rand.Int() % config.Size.Height
 
 		world.ActivateCell(NewCoord(x, y))
+	}
+
+	importer := NewSpecieImporter()
+
+	if config.Species == nil {
+		config.Species = make(map[string]Specie)
+	}
+
+	for lifeName, filename := range importedSpecies {
+		fileContent, err := ioutil.ReadFile(filename)
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Could not open file %s: \"%s\"\n", filename, err)
+			os.Exit(3)
+		}
+
+		config.Species[lifeName], err = importer.ImportFromString(string(fileContent))
+
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Could not import from file %s: \"%s\"\n", filename, err)
+			os.Exit(4)
+		}
 	}
 
 	placer := NewLifePlacer(&world)
