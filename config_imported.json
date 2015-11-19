@@ -1,9 +1,9 @@
 {
-  "Generations": 2000,
+  "Generations": 100,
 
   "Size": {
-    "Width": 150,
-    "Height": 45
+    "Width": 1000,
+    "Height": 1000
   },
 
   "GenerationDuration": "100ms",

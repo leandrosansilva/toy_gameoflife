@@ -118,16 +118,16 @@ func (this *World) ForEachCoordinate(f func(coord Coord)) {
 	wg := sync.WaitGroup{}
 	wg.Add(numOfThreads)
 
-	for i := 0; i < numOfThreads; i++ {
-		begin, end := partitionLength*i, partitionLength*(i+1)
+	computePartition := func(begin, end, width int, wg *sync.WaitGroup) {
+		for i := begin; i < end; i++ {
+			x, y := i%w, i/w
+			f(NewCoord(x, y))
+		}
+		wg.Done()
+	}
 
-		go func() {
-			for i := begin; i < end; i++ {
-				x, y := i%w, i/w
-				f(NewCoord(x, y))
-			}
-			wg.Done()
-		}()
+	for i := 0; i < numOfThreads; i++ {
+		go computePartition(partitionLength*i, partitionLength*(i+1), w, &wg)
 	}
 
 	wg.Wait()
