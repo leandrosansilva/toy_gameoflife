@@ -57,12 +57,10 @@ func (this *Generator) Step() {
 	_, inactiveMatrix := this.World.GetMatrices()
 
 	this.World.ForEachCoordinate(func(coord Coord) {
+		neighbours := this.World.GetCellNeighbours(coord)
+
 		*(inactiveMatrix.RefToCell(coord)) = func() Cell {
 			for _, rule := range this.Rules {
-				neighbours := this.World.GetCellNeighbours(coord)
-
-				// NOTE: stops on the first rule which
-				// applies to the cell
 				if rule.Filter(coord) {
 					return newCellFromBool(rule.ApplyToCell(coord, neighbours))
 				}
