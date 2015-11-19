@@ -131,12 +131,17 @@ func main() {
 
 	printer := NewPrinter(&world)
 
-	fmt.Print("\033[2J")
+	start := time.Now()
 
-	for {
+	// yes, config.Generations == 0 means infinite loop :-)
+	for i := uint64(0); i < config.Generations || config.Generations == 0; i++ {
+		fmt.Print("\033[2J")
 		fmt.Print(printer.Print())
 		time.Sleep(time.Duration(config.GenerationDuration))
-		fmt.Print("\033[2J")
 		generator.Step()
 	}
+
+	elapsed := time.Since(start)
+
+	fmt.Printf("Using %d steps has taken %s\n", config.Generations, elapsed)
 }

@@ -9,6 +9,8 @@ import (
 type Duration time.Duration
 
 type Config struct {
+	Generations uint64
+
 	Size struct {
 		Height int
 		Width  int

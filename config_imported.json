@@ -1,4 +1,6 @@
 {
+  "Generations": 10000,
+
   "Size": {
     "Width": 150,
     "Height": 48
@@ -9,11 +11,6 @@
   "Circular": true,
 
   "Population": [
-    {
-      "Specie": "rake",
-      "Position": [5,5]
-    },
-
     {
       "Specie": "hartmut",
       "Position": [100,20]
