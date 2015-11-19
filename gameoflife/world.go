@@ -1,6 +1,10 @@
 package gameoflife
 
-import "errors"
+import (
+	"errors"
+	"runtime"
+	"sync"
+)
 
 type WorldMatrix struct {
 	/*
@@ -104,10 +108,29 @@ func (this *World) ActivateCell(coord Coord) error {
 func (this *World) ForEachCoordinate(f func(coord Coord)) {
 	l, w := len(this.Matrices[0].Array), this.Matrices[0].Width
 
-	for i := 0; i < l; i++ {
-		x, y := i%w, i/w
-		f(NewCoord(x, y))
+	// FIXME: this code to run in parallel is suboptimal
+	// from 1 core to 4 it gets only 100% faster :-(
+	// Obviously the matrix approach does not scale well
+	// (And my coding skills do not help either...)
+	numOfThreads := runtime.NumCPU()
+	partitionLength := l / numOfThreads
+
+	wg := sync.WaitGroup{}
+	wg.Add(numOfThreads)
+
+	for i := 0; i < numOfThreads; i++ {
+		begin, end := partitionLength*i, partitionLength*(i+1)
+
+		go func() {
+			for i := begin; i < end; i++ {
+				x, y := i%w, i/w
+				f(NewCoord(x, y))
+			}
+			wg.Done()
+		}()
 	}
+
+	wg.Wait()
 }
 
 func (this *World) GetCellState(coord Coord) CellState {

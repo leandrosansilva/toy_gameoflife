@@ -1,19 +1,19 @@
 {
-  "Generations": 10000,
+  "Generations": 2000,
 
   "Size": {
     "Width": 150,
-    "Height": 48
+    "Height": 45
   },
 
   "GenerationDuration": "100ms",
 
-  "Circular": true,
+  "Circular": false,
 
   "Population": [
     {
-      "Specie": "hartmut",
-      "Position": [100,20]
+      "Specie": "gliderlessa",
+      "Position": [3,3]
     }
   ]
 }
