@@ -3,6 +3,10 @@ package gameoflife
 import "errors"
 
 type WorldMatrix struct {
+	/*
+	   [1,2]
+	   [3,4] is internally [1,2,3,4]
+	*/
 	Array []Cell
 	Width int
 }
@@ -89,21 +93,20 @@ func (this *World) IsCellLive(coord Coord) (bool, error) {
 }
 
 func (this *World) ActivateCell(coord Coord) error {
-	if this.IsCoordValid(coord) {
-		(*this.GetActiveMatrix().RefToCell(coord)) = NewLiveCell()
-		return nil
+	if !this.IsCoordValid(coord) {
+		return errors.New("Invalid coord")
 	}
 
-	return errors.New("Invalid coord")
+	(*this.GetActiveMatrix().RefToCell(coord)) = NewLiveCell()
+	return nil
 }
 
 func (this *World) ForEachCoordinate(f func(coord Coord)) {
-	h, w := this.Size()
+	l, w := len(this.Matrices[0].Array), this.Matrices[0].Width
 
-	for x := 0; x < w; x++ {
-		for y := 0; y < h; y++ {
-			f(NewCoord(x, y))
-		}
+	for i := 0; i < l; i++ {
+		x, y := i%w, i/w
+		f(NewCoord(x, y))
 	}
 }
 
