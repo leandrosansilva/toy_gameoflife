@@ -2,8 +2,6 @@ package gameoflife
 
 import (
 	"errors"
-	"runtime"
-	"sync"
 )
 
 type WorldMatrix struct {
@@ -13,6 +11,20 @@ type WorldMatrix struct {
 	*/
 	Array []Cell
 	Width int
+}
+
+func (this *WorldMatrix) IsLive(coord Coord) bool {
+	return this.RefToCell(coord).IsLive()
+}
+
+func (this *WorldMatrix) SetCellState(coord Coord, state bool) {
+	*(this.RefToCell(coord)) = func() Cell {
+		if state {
+			return NewLiveCell()
+		}
+
+		return NewDeadCell()
+	}()
 }
 
 type World struct {
@@ -90,7 +102,7 @@ func (this *World) IsCoordValid(coord Coord) bool {
 
 func (this *World) IsCellLive(coord Coord) (bool, error) {
 	if this.IsCoordValid(coord) {
-		return this.GetActiveMatrix().RefToCell(coord).IsLive(), nil
+		return this.GetActiveMatrix().IsLive(coord), nil
 	}
 
 	return false, errors.New("Invalid coord")
@@ -101,36 +113,17 @@ func (this *World) ActivateCell(coord Coord) error {
 		return errors.New("Invalid coord")
 	}
 
-	(*this.GetActiveMatrix().RefToCell(coord)) = NewLiveCell()
+	this.GetActiveMatrix().SetCellState(coord, true)
 	return nil
 }
 
 func (this *World) ForEachCoordinate(f func(coord Coord)) {
 	l, w := len(this.Matrices[0].Array), this.Matrices[0].Width
 
-	// FIXME: this code to run in parallel is suboptimal
-	// from 1 core to 4 it gets only 100% faster :-(
-	// Obviously the matrix approach does not scale well
-	// (And my coding skills do not help either...)
-	numOfThreads := runtime.NumCPU()
-	partitionLength := l / numOfThreads
-
-	wg := sync.WaitGroup{}
-	wg.Add(numOfThreads)
-
-	computePartition := func(begin, end, width int, wg *sync.WaitGroup) {
-		for i := begin; i < end; i++ {
-			x, y := i%w, i/w
-			f(NewCoord(x, y))
-		}
-		wg.Done()
+	for i := 0; i < l; i++ {
+		x, y := i%w, i/w
+		f(NewCoord(x, y))
 	}
-
-	for i := 0; i < numOfThreads; i++ {
-		go computePartition(partitionLength*i, partitionLength*(i+1), w, &wg)
-	}
-
-	wg.Wait()
 }
 
 func (this *World) GetCellState(coord Coord) CellState {
@@ -138,7 +131,7 @@ func (this *World) GetCellState(coord Coord) CellState {
 		return INVALID_NEIGHBOUR
 	}
 
-	if this.GetActiveMatrix().RefToCell(coord).IsLive() {
+	if this.GetActiveMatrix().IsLive(coord) {
 		return ACTIVE_CELL
 	}
 
