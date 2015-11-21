@@ -6,12 +6,14 @@ type Generator struct {
 }
 
 func CreateDefaultRules(world *World) []Rule {
-	countNeighbours := func(neighbours NeighboursStates, expectedState CellState) int {
+	matrix := world.GetActiveMatrix()
+
+	countLiveNeighbours := func(neighbours NeighboursCoords) int {
 		// NOTE: this is similar to reduce(sum)
 		count := 0
 
-		for _, state := range neighbours {
-			if state == expectedState {
+		for _, coord := range neighbours {
+			if matrix.IsLive(coord) {
 				count++
 			}
 		}
@@ -22,16 +24,16 @@ func CreateDefaultRules(world *World) []Rule {
 	return []Rule{
 		NewRule(func(coord Coord) bool {
 			// Applies to dead cells
-			return !world.GetActiveMatrix().IsLive(coord)
-		}, func(neighbours NeighboursStates, coord Coord) bool {
-			return countNeighbours(neighbours, ACTIVE_CELL) == 3
+			return !matrix.IsLive(coord)
+		}, func(neighbours NeighboursCoords, coord Coord) bool {
+			return countLiveNeighbours(neighbours) == 3
 		}),
 
 		NewRule(func(coord Coord) bool {
 			// Applies to live cells
-			return world.GetActiveMatrix().IsLive(coord)
-		}, func(neighbours NeighboursStates, coord Coord) bool {
-			nLiveNeighbours := countNeighbours(neighbours, ACTIVE_CELL)
+			return matrix.IsLive(coord)
+		}, func(neighbours NeighboursCoords, coord Coord) bool {
+			nLiveNeighbours := countLiveNeighbours(neighbours)
 			return nLiveNeighbours == 2 || nLiveNeighbours == 3
 		}),
 	}
@@ -46,10 +48,17 @@ func NewGenerator(world *World) Generator {
 }
 
 func (this *Generator) Step() {
-	_, inactiveMatrix := this.World.GetMatrices()
+	activeMatrix := this.World.GetActiveMatrix()
+	inactiveMatrix := this.World.GetInactiveMatrix()
 
 	this.World.ForEachCoordinate(func(coord Coord) {
-		neighbours := this.World.GetCellNeighbours(coord)
+		neighbours := this.World.GetCellNeighboursCoords(coord)
+
+		for _, n := range neighbours {
+			if !activeMatrix.IsLive(n) && !inactiveMatrix.IsLive(n) {
+				inactiveMatrix.SetCellState(n, false)
+			}
+		}
 
 		inactiveMatrix.SetCellState(coord, func() bool {
 			for _, rule := range this.Rules {

@@ -16,7 +16,7 @@ func NewSpecieImporter() Importer {
 // FIXME: this method is enoooormous and MUST be refactored
 // It also should somehow support Life 1.06
 func (this *Importer) ImportFromString(content string) (Specie, error) {
-	charToLiveSpecieCell := func(c rune, line int) (int, error) {
+	charToSpecieCellState := func(c rune, line int) (int, error) {
 		if c == '*' {
 			return 1, nil
 		}
@@ -38,7 +38,7 @@ func (this *Importer) ImportFromString(content string) (Specie, error) {
 		row := make([]int, length)
 
 		for index, c := range line {
-			row[index], err = charToLiveSpecieCell(c, lineNumber)
+			row[index], err = charToSpecieCellState(c, lineNumber)
 
 			if err != nil {
 				return []int{}, err

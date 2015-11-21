@@ -4,48 +4,31 @@ import (
 	"errors"
 )
 
-type WorldMatrix struct {
-	/*
-	   [1,2]
-	   [3,4] is internally [1,2,3,4]
-	*/
-	Array []Cell
-	Width int
-}
-
-func (this *WorldMatrix) IsLive(coord Coord) bool {
-	return this.RefToCell(coord).IsLive()
-}
-
-func (this *WorldMatrix) SetCellState(coord Coord, state bool) {
-	*(this.RefToCell(coord)) = func() Cell {
-		if state {
-			return NewLiveCell()
-		}
-
-		return NewDeadCell()
-	}()
-}
+type WorldMatrix map[Coord]bool
 
 type World struct {
 	// The current Matrix and the next generation one
-	Matrices                     [2]WorldMatrix
-	UsingFirstMatrix             bool
+	ActiveMatrix, InactiveMatrix WorldMatrix
+	Height, Width                int
 	NeighbourCoordTransformation CoordTransformation
 }
 
-func CreateMatrix(h, w int) WorldMatrix {
-	return WorldMatrix{make([]Cell, w*h), w}
+func (this *WorldMatrix) IsLive(coord Coord) bool {
+	state, found := (*this)[coord]
+	return state && found
 }
 
-func (this *WorldMatrix) RefToCell(coord Coord) *Cell {
-	x, y := coord.Get()
-	return &(this.Array[y*this.Width+x])
+func (this *WorldMatrix) SetCellState(coord Coord, state bool) {
+	(*this)[coord] = state
+}
+
+func CreateMatrix() WorldMatrix {
+	return make(WorldMatrix)
 }
 
 func NewGenericWorld(h, w int, transformation CoordTransformation) (World, error) {
 	if h > 0 && w > 0 {
-		return World{[2]WorldMatrix{CreateMatrix(h, w), CreateMatrix(h, w)}, true, transformation}, nil
+		return World{CreateMatrix(), CreateMatrix(), h, w, transformation}, nil
 	}
 
 	return World{}, errors.New("Impossible world")
@@ -76,21 +59,17 @@ func NewCircularWorld(h, w int) (World, error) {
 	})
 }
 
-func (this *World) GetMatrices() (live, inactive *WorldMatrix) {
-	if this.UsingFirstMatrix {
-		return &this.Matrices[0], &this.Matrices[1]
-	}
-
-	return &this.Matrices[1], &this.Matrices[0]
+func (this *World) GetActiveMatrix() *WorldMatrix {
+	return &this.ActiveMatrix
 }
 
-func (this *World) GetActiveMatrix() *WorldMatrix {
-	matrix, _ := this.GetMatrices()
-	return matrix
+func (this *World) GetInactiveMatrix() *WorldMatrix {
+	return &this.InactiveMatrix
 }
 
 func (this *World) SwapMatrices() {
-	this.UsingFirstMatrix = !this.UsingFirstMatrix
+	this.ActiveMatrix = this.InactiveMatrix
+	this.InactiveMatrix = CreateMatrix()
 }
 
 func (this *World) IsCoordValid(coord Coord) bool {
@@ -102,7 +81,7 @@ func (this *World) IsCoordValid(coord Coord) bool {
 
 func (this *World) IsCellLive(coord Coord) (bool, error) {
 	if this.IsCoordValid(coord) {
-		return this.GetActiveMatrix().IsLive(coord), nil
+		return this.ActiveMatrix.IsLive(coord), nil
 	}
 
 	return false, errors.New("Invalid coord")
@@ -113,44 +92,57 @@ func (this *World) ActivateCell(coord Coord) error {
 		return errors.New("Invalid coord")
 	}
 
-	this.GetActiveMatrix().SetCellState(coord, true)
+	for _, n := range this.GetCellNeighboursCoords(coord) {
+		if !this.ActiveMatrix.IsLive(n) {
+			this.ActiveMatrix.SetCellState(n, false)
+		}
+	}
+
+	this.ActiveMatrix.SetCellState(coord, true)
+
 	return nil
 }
 
-func (this *World) ForEachCoordinate(f func(coord Coord)) {
-	l, w := len(this.Matrices[0].Array), this.Matrices[0].Width
-
-	for i := 0; i < l; i++ {
-		x, y := i%w, i/w
-		f(NewCoord(x, y))
+func (this *World) ForEachCoordinate(f func(Coord)) {
+	for c, _ := range this.ActiveMatrix {
+		f(c)
 	}
 }
 
-func (this *World) GetCellState(coord Coord) CellState {
-	if !this.IsCoordValid(coord) {
-		return INVALID_NEIGHBOUR
+func (this *World) GetCellNeighboursCoords(coord Coord) NeighboursCoords {
+	validCoords := make(NeighboursCoords, 0, 8)
+
+	for _, n := range []Coord{
+		coord.NorthWest(),
+		coord.North(),
+		coord.NorthEast(),
+		coord.East(),
+		coord.SouthEast(),
+		coord.South(),
+		coord.SouthWest(),
+		coord.West(),
+	} {
+		t := this.NeighbourCoordTransformation(n)
+		if this.IsCoordValid(t) {
+			validCoords = append(validCoords, t)
+		}
 	}
 
-	if this.GetActiveMatrix().IsLive(coord) {
-		return ACTIVE_CELL
-	}
-
-	return INACTIVE_CELL
+	return validCoords
 }
 
-func (this *World) GetCellNeighbours(coord Coord) NeighboursStates {
-	return NeighboursStates{
-		this.GetCellState(this.NeighbourCoordTransformation(coord.NorthWest())),
-		this.GetCellState(this.NeighbourCoordTransformation(coord.North())),
-		this.GetCellState(this.NeighbourCoordTransformation(coord.NorthEast())),
-		this.GetCellState(this.NeighbourCoordTransformation(coord.East())),
-		this.GetCellState(this.NeighbourCoordTransformation(coord.SouthEast())),
-		this.GetCellState(this.NeighbourCoordTransformation(coord.South())),
-		this.GetCellState(this.NeighbourCoordTransformation(coord.SouthWest())),
-		this.GetCellState(this.NeighbourCoordTransformation(coord.West())),
+func (this *World) GetCellLiveNeighboursCoords(coord Coord) NeighboursCoords {
+	lives := make(NeighboursCoords, 0, 8)
+
+	for _, n := range this.GetCellNeighboursCoords(coord) {
+		if this.ActiveMatrix.IsLive(n) {
+			lives = append(lives, n)
+		}
 	}
+
+	return lives
 }
 
 func (this *World) Size() (h, w int) {
-	return len(this.Matrices[0].Array) / this.Matrices[0].Width, this.Matrices[0].Width
+	return this.Height, this.Width
 }

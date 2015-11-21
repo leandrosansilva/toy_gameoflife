@@ -1,8 +1,18 @@
 package gameoflife
 
+import (
+	"fmt"
+)
+
 type Coord [2]int
 
+type NeighboursCoords []Coord
+
 type CoordTransformation func(Coord) Coord
+
+func (this Coord) String() string {
+	return fmt.Sprintf("%dx%d", this[0], this[1])
+}
 
 func NewCoord(x, y int) Coord {
 	return Coord{x, y}

@@ -1,19 +1,19 @@
 {
-  "Generations": 100,
+  "Generations": 1000,
 
   "Size": {
-    "Width": 1000,
-    "Height": 1000
+    "Width": 150,
+    "Height": 45
   },
 
-  "GenerationDuration": "100ms",
+  "GenerationDuration": "10ms",
 
-  "Circular": false,
+  "Circular": true,
 
   "Population": [
     {
       "Specie": "gliderlessa",
-      "Position": [3,3]
+      "Position": [0,0]
     }
   ]
 }
